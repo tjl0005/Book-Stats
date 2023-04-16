@@ -11,8 +11,8 @@ def remaining_isbns():
     books_with_ratings = pd.read_csv("../Data/Processed/books_rated.csv", encoding="cp1252", on_bad_lines="skip")
 
     # Some ISBNs have already been processed so need to exclude them from the list
-    if os.path.isfile('../Data/Processed/isbn_details.csv'):
-        details_data = pd.read_csv("../Data/Processed/isbn_details.csv", on_bad_lines="skip")
+    if os.path.isfile('../Data/Processed/Part/isbn_details.csv'):
+        details_data = pd.read_csv("../Data/Processed/Part/isbn_details.csv", on_bad_lines="skip")
 
         # Get common ISBNs between datasets
         common_isbns = pd.merge(books_with_ratings, details_data, how='inner', left_on='ISBN', right_on='ISBN')
@@ -69,27 +69,23 @@ def get_details(all_isbns):
             print(e)
             time.sleep(10)
 
-        except Exception:  # Quota reached, save current progress
+        except Exception as e:  # Quota reached, save current progress
+            print(e)
             details_df = pd.DataFrame(
                 {"ISBN": stored_isbns, "Summary": summaries, "Categories": categories, "Page_Count": page_counts})
 
-            if os.path.isfile('../Data/Processed/isbn_details.csv'):
+            if os.path.isfile('../Data/Processed/Part/isbn_details.csv'):
                 print("Appending save")
-                current_details = pd.read_csv('../Data/Processed/isbn_details.csv', on_bad_lines='skip')
+                current_details = pd.read_csv('../Data/Processed/Part/isbn_details.csv', on_bad_lines='skip')
                 combined = pd.concat([current_details, details_df], axis=0)
                 combined.drop_duplicates(subset="ISBN", inplace=True)
-                combined.to_csv("../Data/Processed/isbn_details.csv", index=False)
+                combined.to_csv("../Data/Processed/Part/isbn_details.csv", index=False)
 
             else:
                 print("New save")
-                details_df.to_csv("../Data/Processed/isbn_details.csv", index=False)
+                details_df.to_csv("../Data/Processed/Part/isbn_details.csv", index=False)
 
             print("Exiting and saving {} records".format(len(details_df.index)))
-            # Restart
-            print("New run starts in 1 minute")
-            time.sleep(60)
-            new_isbns = remaining_isbns()
-            get_details(new_isbns)
 
         print(isbn)
         print("{} out of {}".format(count, total))

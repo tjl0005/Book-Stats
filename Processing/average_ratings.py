@@ -33,4 +33,4 @@ average_rating_df = pd.DataFrame(unique_isbn, columns=["ISBN"])
 average_rating_df["Rating"] = rating_list
 
 # Save dataframe, this is merged with book data in data_merging.py
-average_rating_df.to_csv('../data/Processed/isbn_ratings', header=True, index=False)
+average_rating_df.to_csv('../data/Processed/Part/isbn_ratings', header=True, index=False)
