@@ -1,3 +1,8 @@
+"""
+This file is used to calculate the average ratings for all books in the available dataset.
+
+The final can be located within Data/Processed/Part/isbn_ratings.csv
+"""
 import pandas as pd
 
 # Data cleaned in cleaning.py

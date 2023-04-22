@@ -1,15 +1,18 @@
-import re
-import numpy as np
-import pandas as pd
+"""
+This file is used to compile various stats about the books within the dataset. The main function of this file simply
+takes upto 2 groups (Country/Age) with a sample size to find the average page counts, common categories and more. To
+ensure relevance with summary data for the stats the summaries are cleaned, so all disallowed characters, stop words
+(i.e. "The") and irrelevant words are removed.
+"""
 from collections import Counter
 from nltk.corpus import stopwords
+import pandas as pd
+import numpy as np
+import re
 
 
 rating_details = pd.read_csv("../Data/Processed/Part/rating_details.csv", encoding="cp1252", on_bad_lines="skip")
 book_details = pd.read_csv("../Data/Processed/books_complete_details.csv")
-
-age_cols = ["Under_17", "Under_30", "Under_45", "Over_45"]
-countries = ["USA", "United Kingdom", "Australia", "New Zealand", "Canada"]
 
 # Expanded stopwords with own observations
 irrelevant_words = ["story" + "new", "quot", "story", "new", "york", "book", "times", "one", "author", "bestselling",
@@ -19,18 +22,28 @@ stop_words = set(stopwords.words('english') + irrelevant_words)
 
 
 def stats(group, secondary, sample_size):
+    """
+    This function compiles various statistics (see return values) for the books dataset using upto to groups as subsets,
+    which are provided by the user.
+
+    :param group: First subset to be used, this is required and can be an age group or country
+    :param secondary: Second subset to be used, this is not required (Can pass None if so), usually a country
+    :param sample_size: The number of records to base the statistics of, mainly used for testing
+    :return: average page counts, common categories, common words and common titles for the given group
+    """
     if secondary:
         group_stats = rating_details.loc[rating_details[secondary] > 0]
         group_stats = group_stats[["ISBN", group]].sort_values(by=[group], ascending=False).head(sample_size)
     else:
         group_stats = rating_details[["ISBN", group]].sort_values(by=[group], ascending=False).head(sample_size)
 
+    # Store all statistics
     page_counts, categories, titles, all_synopsis = [], [], [], []
 
     for isbn in group_stats["ISBN"]:
         isbn_details = book_details.loc[book_details['ISBN'] == isbn]
 
-        # NOTE: Temporary limitation due to isbn_details being incomplete
+        # Not all ISBNs in rating details have complete details available
         if len(isbn_details) > 0:
             # Modified for easier processing later
             category = str(isbn_details["Categories"].values[0])
@@ -54,6 +67,15 @@ def stats(group, secondary, sample_size):
 
 
 def process_summary(summaries):
+    """
+    This is used to improve the usability of all summaries given by removing stop words, illegal characters and
+    irrelevant words (I.E. "Edition"), usability is improved for statistics.
+
+    These summaries are saved to Data/Processed/Part/shortened_summaries.csv
+
+    :param summaries: the data to be processed
+    :return: an array containing processed summaries
+    """
     count = 0
     total = len(summaries.index)
     new_summaries = []
@@ -68,13 +90,15 @@ def process_summary(summaries):
             cleaned_summary = [w for w in standardised_summary.split() if w not in stop_words]
 
             new_summaries.append(' '.join(cleaned_summary))
-            count += 1
-            print("{} out of {}".format(count, total))
         else:
             new_summaries.append("")
+
+        count += 1
+        print("{} out of {}".format(count, total))
+
+    book_details["Summary"].to_csv('../data/Processed/shortened_summaries.csv', header=True, index=False)
 
     return new_summaries
 
 
-# NOTE: Required while still completing details
-book_details["Summary"] = process_summary(book_details["Summary"])
+book_details["Summary"] = pd.read_csv("../Data/Processed/Part/shortened_summaries.csv", on_bad_lines="skip")

@@ -1,3 +1,9 @@
+"""
+Using the cleaned rating and users datasets a new dataset is created containing all the user and rating figures for each
+ISBN. Meaning each ISBN has a count for each country and age group, to be used for data analysis.
+
+This file is saved to Data/Processed/Part/rating_details.csv
+"""
 import numpy as np
 import pandas as pd
 
@@ -83,6 +89,7 @@ for isbn in isbns:
     counter += 1
     print("{} out of {}".format(counter, len(user_ids)))
 
+# Store all the details in a dataframe and then save the dataframe into processed files
 details_df = pd.DataFrame(
     {"ISBN": isbns, "No.": no_ratings, "Avg_Age": avg_ages,
      "Under_17": u_17_groups, "Under_30": u_30_groups, "Under_45": u_45_groups, "Under_60": u_60_groups,

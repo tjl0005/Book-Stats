@@ -1,8 +1,20 @@
+"""
+This file is used to clean the initial dataset, so it can be used as desired. This cleaning involves removing incomplete
+or irrelevant data, renaming columns and standardising column names.
+
+All the cleaned files can be found within Data/Cleaned
+"""
 import os.path
 import pandas as pd
 
 
 def clean(filename, delete):
+    """
+    Clean a given file by standardising and removing irrelevant/incomplete data.
+
+    :param filename: file to clean, must be within Data/Unprocessed/
+    :param delete: Flag to specify whether file should be deleted after cleaning
+    """
     # All cleaned files are saved to Data/Cleaned/
     if not os.path.isfile('../data/Cleaned/{}.csv'.format(filename)):
         if filename == "books":
@@ -43,6 +55,7 @@ def clean(filename, delete):
     if delete:  # For testing purposes
         os.remove('../data/Cleaned/{}.csv'.format(filename))
 
-# clean("books", False)
-# clean("ratings", False)
-# clean("users", False)
+
+clean("books", False)
+clean("ratings", False)
+clean("users", False)

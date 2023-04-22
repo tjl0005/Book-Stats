@@ -1,3 +1,7 @@
+"""
+The initial dataset does not include all desired details for the books, so using this file and Googles "Books" API, this
+data is retrieved and stored for later merging within "data_merging.py" within the processing folder.
+"""
 import json
 import os
 import time
@@ -6,8 +10,12 @@ import pandas as pd
 from urllib.error import HTTPError
 
 
-# Ensure only necessary ISBNs are having data retrieved
 def remaining_isbns():
+    """
+    Ensure only necessary ISBNs are having data retrieved
+
+    :return: A list containing all the remaining ISBNs that are not completed yet.
+    """
     books_with_ratings = pd.read_csv("../Data/Processed/books_rated.csv", encoding="cp1252", on_bad_lines="skip")
 
     # Some ISBNs have already been processed so need to exclude them from the list
@@ -15,7 +23,7 @@ def remaining_isbns():
         details_data = pd.read_csv("../Data/Processed/Part/isbn_details.csv", on_bad_lines="skip")
 
         # Get common ISBNs between datasets
-        common_isbns = pd.merge(books_with_ratings, details_data, how='inner', left_on='ISBN', right_on='ISBN')
+        common_isbns = pd.merge(books_with_ratings, details_data, left_on='ISBN', right_on='ISBN')
         common_isbns = common_isbns["ISBN"]
 
         # Remove the common ISBNs from the list so only required ones remain
@@ -30,6 +38,11 @@ def remaining_isbns():
 
 
 def get_details(all_isbns):
+    """
+    Use the Google Books API to complete the known details for all possible ISBNs currently stored
+
+    :param all_isbns: A list containing the ISBNs which are not yet completed
+    """
     api = "https://www.googleapis.com/books/v1/volumes?q=isbn:"
     # Request only specific fields to save time
     fields = "&fields=items(volumeInfo(categories,%20pageCount),searchInfo(textSnippet))"
@@ -41,6 +54,8 @@ def get_details(all_isbns):
 
     for isbn in all_isbns:
         count += 1
+        if len(isbn) > 10:
+            isbn = isbn[-10:]
         try:
             # Get relevant data from API with a request
             with urllib.request.urlopen(api + isbn + fields) as f:
@@ -71,24 +86,37 @@ def get_details(all_isbns):
 
         except Exception as e:  # Quota reached, save current progress
             print(e)
-            details_df = pd.DataFrame(
-                {"ISBN": stored_isbns, "Summary": summaries, "Categories": categories, "Page_Count": page_counts})
-
-            if os.path.isfile('../Data/Processed/Part/isbn_details.csv'):
-                print("Appending save")
-                current_details = pd.read_csv('../Data/Processed/Part/isbn_details.csv', on_bad_lines='skip')
-                combined = pd.concat([current_details, details_df], axis=0)
-                combined.drop_duplicates(subset="ISBN", inplace=True)
-                combined.to_csv("../Data/Processed/Part/isbn_details.csv", index=False)
-
-            else:
-                print("New save")
-                details_df.to_csv("../Data/Processed/Part/isbn_details.csv", index=False)
-
-            print("Exiting and saving {} records".format(len(details_df.index)))
+            save_details(stored_isbns, summaries, categories, page_counts)
 
         print(isbn)
         print("{} out of {}".format(count, total))
+
+    save_details(stored_isbns, summaries, categories, page_counts)
+
+
+def save_details(stored_isbns, summaries, categories, page_counts):
+    """
+    Save newly retrieved ISBNs details to their own csv file, this function can be called with a new batch of ISBN
+    details and these details will appended to the existing file.
+
+    :param stored_isbns: The isbns which have been completed within this batch
+    :param summaries: All the summaries retrieved for the given ISBNs
+    :param categories: All the categories retrieved for the given ISBNs
+    :param page_counts: All the page counts retrieved for the given ISBNs
+    """
+    details_df = pd.DataFrame(
+        {"ISBN": stored_isbns, "Summary": summaries, "Categories": categories, "Page_Count": page_counts})
+
+    if os.path.isfile('../Data/Processed/Part/isbn_details.csv'):
+        print("Appending save")
+        current_details = pd.read_csv('../Data/Processed/Part/isbn_details.csv', on_bad_lines='skip')
+        combined = pd.concat([current_details, details_df], axis=0)
+        combined.drop_duplicates(subset="ISBN", inplace=True)
+        combined.to_csv("../Data/Processed/Part/isbn_details.csv", index=False)
+
+    else:
+        print("New save")
+        details_df.to_csv("../Data/Processed/Part/isbn_details.csv", index=False)
 
 
 isbns = remaining_isbns()
