@@ -1,6 +1,6 @@
 """
 Using the cleaned user data the overall demographics for the dataset are compiled. This includes the following figures
-for each country: Under_17, Under_30, Under_45, Under_60, Over_60, Total (For Country) as well as the totals for each
+for each country: Under_17, Under_30, Under_45, Under_60, Over_60, Total (For Countries) as well as the totals for each
 age group and the dataset overall.
 
 These figures can be found at Data/Processed/user_demographics.csv
@@ -8,18 +8,18 @@ These figures can be found at Data/Processed/user_demographics.csv
 import pandas as pd
 import numpy as np
 
-users = pd.read_csv("../Data/Cleaned/users.csv", encoding="cp1252", on_bad_lines="skip")
-user_ids = users["User"].unique()
+USERS = pd.read_csv("../Data/Cleaned/users.csv", encoding="cp1252", on_bad_lines="skip")
+USER_IDS = USERS["User"].unique()
+TOTAL_USERS = len(USER_IDS)
+
+count = 0
 
 # Contents for all the rows (Countries) of the new dataframe
 rows = [["USA", 0, 0, 0, 0, 0], ["United_Kingdom", 0, 0, 0, 0, 0], ["Australia", 0, 0, 0, 0, 0],
         ["New_Zealand", 0, 0, 0, 0, 0], ["Canada", 0, 0, 0, 0, 0], ["Other", 0, 0, 0, 0, 0]]
 
-total = len(user_ids)
-count = 0
-
-for user in user_ids:
-    user_details = users.loc[users['User'] == user]
+for user in USER_IDS:
+    user_details = USERS.loc[USERS["User"] == user]
 
     full_location = user_details["Location"].values[0].split(", ")
     age = user_details["Age"].values[0]
@@ -27,7 +27,7 @@ for user in user_ids:
     if not np.isnan(age):
         country = full_location[-1]
 
-        # Country represents index within the rows 2D array
+        # Countries represents index within the rows 2D array
         if country == "usa":
             country_index = 0
         elif country == "united kingdom":
@@ -54,14 +54,15 @@ for user in user_ids:
             rows[country_index][5] += 1
 
     count += 1
-    print("{} out of {}".format(count, total))
+    print("{} out of {}".format(count, TOTAL_USERS))
 
-user_stats = pd.DataFrame(rows, columns=["Country", "Under_17", "Under_30", "Under_45", "Under_60", "Over_60"])
+user_stats = pd.DataFrame(rows, columns=["Countries", "Under_17", "Under_30", "Under_45", "Under_60", "Over_60"])
 
 # Add totals for age groups and countries
-user_stats['Total'] = user_stats[["Under_17", "Under_30", "Under_45", "Under_60", "Over_60"]].sum(axis=1)
+user_stats["Total"] = user_stats[["Under_17", "Under_30", "Under_45", "Under_60", "Over_60"]].sum(axis=1)
 age_totals = ["Total"] + user_stats[["Under_17", "Under_30", "Under_45", "Under_60", "Over_60", "Total"]].sum(axis=0)\
     .tolist()
+
 # Append row
 user_stats.loc[len(user_stats)] = age_totals
 

@@ -1,0 +1,3 @@
+Under_17,Under_30,Under_45,Under_60,Over_60
+"['Juvenile Fiction', 'Adventure', 'Humor', 'Domestic fiction', 'Adolescence']","['Juvenile Fiction', 'Biography', 'Humor', 'Adventure', 'Detective and\nmystery']","['Juvenile Fiction', 'Biography', 'Domestic fiction', 'Adventure', 'Detective and\nmystery']","['Biography', 'Juvenile Fiction', 'Detective and\nmystery', 'Humor', 'American fiction']","['Biography', 'Domestic fiction', 'Detective and\nmystery', 'American fiction', 'Juvenile Fiction']"
+"[21, 4, 4, 3, 2]","[34, 18, 10, 8, 8]","[26, 20, 12, 11, 11]","[18, 17, 9, 8, 7]","[8, 6, 6, 5, 4]"

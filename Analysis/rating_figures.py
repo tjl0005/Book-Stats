@@ -7,8 +7,8 @@ This file is saved to Data/Processed/Part/rating_details.csv
 import numpy as np
 import pandas as pd
 
-ratings = pd.read_csv("../Data/Cleaned/ratings.csv", encoding="cp1252", on_bad_lines="skip")
-users = pd.read_csv("../Data/Cleaned/users.csv", on_bad_lines="skip")
+RATINGS = pd.read_csv("../Data/Cleaned/ratings.csv", encoding="cp1252", on_bad_lines="skip")
+USERS = pd.read_csv("../Data/Cleaned/users.csv", on_bad_lines="skip")
 
 # Number of ratings and average ages
 no_ratings, avg_ages = [], []
@@ -18,14 +18,13 @@ u_17_groups, u_30_groups, u_45_groups, u_60_groups, o_60_groups = [], [], [], []
 usa_groups, uk_groups, australia_groups, new_zealand_groups, canada_groups, other_groups = [], [], [], [], [], []
 
 # Only get required ISBNs to reduce already long processing time
-known_valid = pd.read_csv("../Data/Processed/books_rated.csv", encoding="cp1252", on_bad_lines="skip")
-isbns = known_valid["ISBN"].unique()
+UNIQUE_ISBNS = pd.read_csv("../Data/Processed/books_rated.csv", encoding="cp1252")["ISBN"].unique()
 
 counter = 0
 
-for isbn in isbns:
+for isbn in UNIQUE_ISBNS:
     # Given ISBN get all relevant users from ratings.csv
-    isbn_ratings = ratings.loc[ratings['ISBN'] == isbn]
+    isbn_ratings = RATINGS.loc[RATINGS["ISBN"] == isbn]
     user_ids = isbn_ratings["User"]
 
     # Analysis for this ISBN
@@ -35,7 +34,7 @@ for isbn in isbns:
     usa, united_kingdom, australia, new_zealand, canada, other = 0, 0, 0, 0, 0, 0
 
     for user in user_ids:
-        user_details = users.loc[users['User'] == user]
+        user_details = USERS.loc[USERS["User"] == user]
         full_location = user_details["Location"].values[0].split(", ")
 
         age = user_details["Age"].values[0]
@@ -87,11 +86,11 @@ for isbn in isbns:
     other_groups.append(other)
 
     counter += 1
-    print("{} out of {}".format(counter, len(user_ids)))
+    print("{} out of {}".format(counter, len(UNIQUE_ISBNS)))
 
 # Store all the details in a dataframe and then save the dataframe into processed files
 details_df = pd.DataFrame(
-    {"ISBN": isbns, "No.": no_ratings, "Avg_Age": avg_ages,
+    {"ISBN": UNIQUE_ISBNS, "No.": no_ratings, "Avg_Age": avg_ages,
      "Under_17": u_17_groups, "Under_30": u_30_groups, "Under_45": u_45_groups, "Under_60": u_60_groups,
      "Over_60": o_60_groups, "USA": usa_groups, "United_Kingdom": uk_groups,
      "Australia": australia_groups, "New_Zealand": new_zealand_groups, "Canada": canada_groups, "Other": other_groups})
