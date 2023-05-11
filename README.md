@@ -19,3 +19,5 @@ For data expansion, such as categories Google's Books API was used to retrieve t
 Some basic data analysis has been performed and visualised, within Data/Visualisations, these visuals are currently a 
 work in progress with some using limited sample sizes and others just not polished. Nonetheless, they provide an insight 
 into the data used for this project and in turn its usability/reliability.
+
+A notebook exploring this visualisations can be found [here](https://colab.research.google.com/drive/10_sH0P2YNyV3ajmkeCcqTazToSzUVc2T?usp=sharing)

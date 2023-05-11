@@ -15,7 +15,8 @@ import pandas as pd
 
 USER_DEMOGRAPHICS = pd.read_csv("../Data/Stats/user_demographics.csv", index_col=False)
 RATING_DEMOGRAPHICS = pd.read_csv("../Data/Processed/Part/rating_details.csv", index_col=False)
-MAX_SAMPLE_SIZE = len(RATING_DEMOGRAPHICS.index)
+MAX_SAMPLE_SIZE = 50
+# MAX_SAMPLE_SIZE = len(RATING_DEMOGRAPHICS.index)
 
 COUNTRIES = ["USA", "United_Kingdom", "Australia", "New_Zealand", "Canada"]
 AGES = ["Under_17", "Under_30", "Under_45", "Under_60", "Over_60"]
@@ -62,22 +63,24 @@ def plot_grouped_page_counts(sample_size):
     :param sample_size: The number of records to base the statistics of, can be set to None to poll entire dataset
     """
     if GENERATING_STATS_CSV:
-        average_country_pages = {"USA": [], "United_Kingdom": [], "Australia": [], "New_Zealand": [], "Canada": []}
+        average_country_pages = {"Age_Group": AGES, "USA": [], "United_Kingdom": [], "Australia": [], "New_Zealand": [],
+                                 "Canada": []}
 
         for country in COUNTRIES:
             for age_group in AGES:
                 page_count = stats(age_group, country, sample_size)[0]
                 average_country_pages[country].append(page_count)
 
-        average_country_pages_df = pd.DataFrame.from_dict(average_country_pages, orient="index", columns=AGES)
-        average_country_pages_df.to_csv("../Data/Stats/grouped_page_counts.csv")
-    else:
-        average_country_pages_df = pd.read_csv("../Data/Stats/grouped_page_counts.csv", usecols=AGES)
+        average_country_pages_df = pd.DataFrame.from_dict(average_country_pages)
+        average_country_pages_df.to_csv("../Data/Stats/grouped_page_counts.csv", index=False)
+
+    average_country_pages_df = pd.read_csv("../Data/Stats/grouped_page_counts.csv", usecols=COUNTRIES)
 
     # Bars
     ax = average_country_pages_df.plot.bar(rot=0, xlabel="Age Group", ylabel="Page Count")
     # Average line
-    average_country_pages_df.mean().plot(ax=ax, color="brown", linestyle="--", linewidth=3, label="Overall Average")
+    average_country_pages_df.mean(axis=1).plot(ax=ax, color="brown", linestyle="--", linewidth=3, label="Overall Average")
+    print(average_country_pages_df.mean(axis=1))
 
     ax.set_axisbelow(True)
     ax.yaxis.grid(color="gray", linestyle="dashed")
